@@ -2,15 +2,9 @@
 # TapoConnect
 Unofficial TP-Link Tapo smart device library for C#.
 
-[![NuGet version (TapoConnect)](https://img.shields.io/nuget/v/TapoConnect.svg)](https://www.nuget.org/packages/TapoConnect/)
-
-## Tested With
- * [Tapo L530E](https://www.tapo.com/uk/product/smart-light-bulb/tapo-l530e/)
- * [Tapo P100](https://www.tp-link.com/us/home-networking/smart-plug/tapo-p100/)
-
-## Examples
-
-**As of firmware 1.1.0 Build 230721 Rel.224802, KLAP protocol is being used over the secure pass-through protocol. As a result, this API has to attempt to login with one protocol then fallback to the other. By default, KLAP protocol will be used first since it is the new standard.**
+### Updates
+* Ported to dotnet 8.0
+* Linux friendly
 
 Build clients to interact with Tapo Cloud or smart device.
 ```cs
@@ -79,12 +73,7 @@ This is an unofficial SDK that has no affiliation with TP-Link.
 TP-Link and all respective product names are copyright TP-Link Technologies Co, Ltd. and/or its subsidiaries and affiliates.
 
 ### Credits
-
 Credit to this API go to:
-* Ported from: https://github.com/dickydoouk/tp-link-tapo-connect
-* Original: https://github.com/fishbigger/TapoP100
-* Original:https://github.com/K4CZP3R/tapo-p100-java-poc
+* Forked from [cwakefie27/TapoConnect](https://github.com/cwakefie27/TapoConnect)
 
-Many thanks to [@fishbigger](https://github.com/fishbigger), [@K4CZP3R](https://github.com/K4CZP3R), and others involved for reverse enginering TP-link Tapo API in this [post](https://community.home-assistant.io/t/tp-link-tapo-p100/147792).
-
-For more details, [@K4CZP3R](https://github.com/K4CZP3R) has a [post](https://k4czp3r.xyz/reverse-engineering/tp-link/tapo/2020/10/15/reverse-engineering-tp-link-tapo.html) on the process of reverse enginering the API.
+Many thanks to [cwakefie27](https://github.com/cwakefie27) for this fork.
