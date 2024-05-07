@@ -6,7 +6,7 @@ using Tapo.Application.Util;
 
 namespace Tapo.Application.Protocol;
 
-public class SecurePassthroughDeviceClient : ITapoDeviceClient
+public class SecurePassthroughDeviceClient : IDeviceProtocol
 {
     public TapoDeviceProtocol Protocol => TapoDeviceProtocol.SecurePassThrough;
     protected virtual JsonSerializerOptions JsonSerializerOptions { get; }

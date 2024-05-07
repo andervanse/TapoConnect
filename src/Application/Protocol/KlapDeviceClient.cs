@@ -7,7 +7,7 @@ using Tapo.Application.Util;
 
 namespace Tapo.Application.Protocol;
 
-public class KlapDeviceClient : ITapoDeviceClient
+public class KlapDeviceClient : IDeviceProtocol
 {
     private const string TpSessionKey = "TP_SESSIONID";
     public TapoDeviceProtocol Protocol => TapoDeviceProtocol.Klap;
@@ -39,24 +39,17 @@ public class KlapDeviceClient : ITapoDeviceClient
 
     public KlapDeviceClient(
         ILogger<TapoDeviceClient> logger,
-        HttpClient httpClient,
-        JsonSerializerOptions? jsonSerializerOptions = null)
+        HttpClient httpClient)
     {
         _logger = logger;
         _httpClient = httpClient;
 
-        if (jsonSerializerOptions is not null)
+        _jsonSerializerOptions = new JsonSerializerOptions
         {
-            _jsonSerializerOptions = jsonSerializerOptions;
-        }
-        else
-        {
-            _jsonSerializerOptions = new JsonSerializerOptions {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-            };
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        };
 
-            _jsonSerializerOptions.Converters.Add(new TapoJsonDateTimeConverter());
-        }
+        _jsonSerializerOptions.Converters.Add(new TapoJsonDateTimeConverter());
     }
 
     public async Task<TapoDeviceKey> LoginByIpAsync(string deviceIp, string username, string password)
@@ -314,11 +307,7 @@ public class KlapDeviceClient : ITapoDeviceClient
         _logger.LogDebug("device request.......: {deviceRequest}", deviceRequest);
 
         var payload = klapChiper.Encrypt(deviceRequest);
-
-        _logger.LogDebug("encripted payload....: {payload}", payload);
-
         var requestContent = new ByteArrayContent(payload);
-
         var baseUrl = $"http://{deviceIp}";
         var url = $"{baseUrl}/app/request?seq={klapChiper.Seq}";
 
@@ -346,9 +335,6 @@ public class KlapDeviceClient : ITapoDeviceClient
         var responseBytes = await response.Content.ReadAsByteArrayAsync();
         var decryptedBytes = klapChiper.Decrypt(responseBytes);
         var decryptedString = Encoding.UTF8.GetString(decryptedBytes);
-        _logger.LogDebug("decryptedBytes.........: {decryptedBytes}", decryptedBytes);
-        _logger.LogDebug("decryptedString.........: {decryptedString}", decryptedString);
-
         var responseJson = JsonSerializer.Deserialize<DeviceSecurePassthroughReponse>(decryptedString, _jsonSerializerOptions);
 
         if (responseJson is null)

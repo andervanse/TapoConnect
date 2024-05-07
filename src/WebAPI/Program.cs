@@ -1,6 +1,7 @@
-using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Mvc;
 using Tapo.Application;
+using Tapo.WebAPI;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,17 +10,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddHttpClient();
-builder.Services.AddKeyedScoped<ITapoCloudClient, TapoCloudClient>(nameof(TapoCloudClient));
-builder.Services.AddKeyedScoped<ITapoDeviceClient, TapoDeviceClient>(nameof(TapoDeviceClient));
+var configuration = builder.Configuration;
 
-builder.Services.AddOptions<AuthenticationConfig>()
-    .Bind(builder.Configuration.GetSection(AuthenticationConfig.Authentication));
-
+builder.Services.ConfigureDependencies(configuration);
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -28,12 +24,39 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.MapGet("/hello", async ([FromKeyedServices(nameof(TapoCloudClient))] ITapoCloudClient cloudClient) => {
-
-    var response = await cloudClient.LoginAsync("abc", "abc");
-    return Results.Ok(response);
+app.MapGet("/devices", async (
+    [FromServices] ITapoCloudClient cloudClient,
+    IOptions<AuthenticationConfig> options) => {
+    var config = options.Value;
+    var loginResult = await cloudClient.LoginAsync(config.Email, config.Password);
+    var listDevicesResponse = await cloudClient.ListDevicesAsync(loginResult.Token);
+    return Results.Ok(listDevicesResponse);
 })
-.WithName("GetHello")
+.WithName("GetDevices")
+.WithOpenApi();
+
+app.MapGet("/devices/{ip}", async (
+    [FromServices] ITapoDeviceClient deviceClient,
+    IOptions<AuthenticationConfig> options,
+    [FromRoute] string ip) => {
+    var config = options.Value;
+    var deviceKey = await deviceClient.LoginByIpAsync(ip, config.Email, config.Password);
+    var deviceInfoResult = await deviceClient.GetDeviceInfoAsync(deviceKey);
+    return Results.Ok(deviceInfoResult);
+})
+.WithName("GetDeviceInfo")
+.WithOpenApi();
+
+app.MapPatch("/devices/{ip}/{state:bool}", async (
+    [FromServices] ITapoDeviceClient deviceClient,
+    IOptions<AuthenticationConfig> options,
+    [FromRoute] string ip, [FromRoute] bool state) => {
+    var config = options.Value;
+    var deviceKey = await deviceClient.LoginByIpAsync(ip, config.Email, config.Password);
+    await deviceClient.SetStateAsync(deviceKey, new TapoSetPlugState(state));
+    return Results.NoContent();
+})
+.WithName("SetDeviceState")
 .WithOpenApi();
 
 app.Run();

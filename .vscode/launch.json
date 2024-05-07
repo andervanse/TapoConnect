@@ -5,13 +5,13 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": ".NET Core Launch (console)",
+            "name": ".NET Core Launch (WebAPI)",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/test/Console/bin/Debug/net8.0/Tapo.Console.Test.dll",
-            "args": [],
-            "cwd": "${workspaceFolder}/test/Console",
+            "program": "${workspaceFolder}/src/WebAPI/bin/Debug/net8.0/Tapo.WebAPI.dll",
+            "args": ["--environment", "Development"],
+            "cwd": "${workspaceFolder}/src/WebAPI",
             "console": "internalConsole",
             "stopAtEntry": false
         },

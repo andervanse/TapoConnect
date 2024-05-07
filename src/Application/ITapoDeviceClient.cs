@@ -3,9 +3,14 @@ using Tapo.Application.Protocol;
 
 namespace Tapo.Application;
 
-public interface ITapoDeviceClient
+
+public interface IDeviceProtocol : ITapoDeviceClient
 {
     TapoDeviceProtocol Protocol { get; }
+}
+
+public interface ITapoDeviceClient
+{
     Task<TapoDeviceKey> LoginByIpAsync(string ipAddress, string email, string password);
     Task<DeviceGetEnergyUsageResult> GetEnergyUsageAsync(TapoDeviceKey deviceKey);
     Task<DeviceGetInfoResult> GetDeviceInfoAsync(TapoDeviceKey deviceKey);
