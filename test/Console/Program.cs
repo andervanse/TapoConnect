@@ -8,7 +8,7 @@ internal class Program
 {
     private const string ENV_FILE = "appsettings.Development.json";
 
-    static async Task Main(string[] args)
+    static async Task Main()
     {
         if (!File.Exists(ENV_FILE))
         {

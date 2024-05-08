@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Org.BouncyCastle.Asn1.X509;
 using System;
 using System.Linq;
 using System.Net.Http;
@@ -15,24 +16,32 @@ public class DeviceClientTest : BaseTest
 {
     private ITapoDeviceClient _client;
     private TapoDeviceKey _deviceKey = null!;
+    private HttpClient _httpClient;
 
     [TestInitialize]
     public async Task TestInitialize()
     {
         var device = AuthenticationConfig.Devices.FirstOrDefault();
 
-        using var httpClient = new HttpClient {
+        _httpClient = new HttpClient {
             BaseAddress = new Uri($"http://{device.IpAddress}")
         };
         
         _client = new TapoDeviceClient (
             DeviceLogger,
-            new KlapDeviceClient(DeviceLogger, httpClient));
+            new KlapDeviceClient(DeviceLogger, _httpClient));
 
         _deviceKey = await _client.LoginByIpAsync(device.IpAddress, AuthenticationConfig.Email, AuthenticationConfig.Password);
         DeviceLogger.LogDebug("login token: {deviceKey}", _deviceKey);
     }
 
+    [TestCleanup]
+    public void Cleanup()
+    {
+        _httpClient.Dispose();
+    }
+
+    
 
     [TestMethod]
     public async Task GetDeviceInfoAsync()

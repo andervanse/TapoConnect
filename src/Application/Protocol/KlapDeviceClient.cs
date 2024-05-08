@@ -304,25 +304,11 @@ public class KlapDeviceClient : IDeviceProtocol
         _logger.LogDebug("device ip............: {deviceIp}", deviceIp);
         _logger.LogDebug("session cookie.......: {sessionCookie}", sessionCookie);
         _logger.LogDebug("klap chiper seq .....: {klapChiper}", klapChiper.Seq);
-        _logger.LogDebug("device request.......: {deviceRequest}", deviceRequest);
 
         var payload = klapChiper.Encrypt(deviceRequest);
         var requestContent = new ByteArrayContent(payload);
-        var baseUrl = $"http://{deviceIp}";
-        var url = $"{baseUrl}/app/request?seq={klapChiper.Seq}";
 
-        using var httpClient = new HttpClient();
-        using var message = new HttpRequestMessage(HttpMethod.Post, url)
-        {
-            Method = HttpMethod.Post,
-            Content = requestContent,
-        };
-
-        if (sessionCookie != null)
-            message.Headers.Add("Cookie", sessionCookie);
-
-        var requestTime = DateTime.Now;
-        var response = await httpClient.SendAsync(message);
+        using var response = await _httpClient.PostAsync($"/app/request?seq={klapChiper.Seq}", requestContent);
 
         _logger.LogDebug("status code.........: {statusCode}", response.StatusCode);
         _logger.LogDebug("reason phrase.......: {reason}", response.ReasonPhrase);

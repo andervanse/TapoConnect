@@ -1,15 +1,47 @@
+using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.OpenApi.Models;
 using Tapo.Application;
-using Serilog;
 using Tapo.Application.Protocol;
+using Serilog;
 
 namespace Tapo.WebAPI;
 
-public static class ConfigureDI
+public static class Configuration
 {
+
+    public static void ConfigureApp(this WebApplication webApp, IConfiguration configuration)
+    {
+        var routePrefix = configuration["RoutePrefix"];
+        webApp.UsePathBase($"/{routePrefix}");
+
+        webApp.UseForwardedHeaders(new ForwardedHeadersOptions
+        {
+            ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+        });
+
+        if (webApp.Environment.IsDevelopment())
+        {
+            webApp.UseSwagger();
+            webApp.UseSwaggerUI();
+            webApp.UseDeveloperExceptionPage();
+        }
+
+        webApp.UseHttpsRedirection();
+    }
 
     public static IServiceCollection ConfigureDependencies(this IServiceCollection services, IConfiguration configuration)
     {
-       services.AddOptions<AuthenticationConfig>()
+        services.AddEndpointsApiExplorer();
+
+        services.AddSwaggerGen(c =>
+        {
+            c.SwaggerDoc("v1", new OpenApiInfo { Title = "TAPO API", Version = "v1" });          
+        });
+
+        services.AddProblemDetails();
+        services.AddEndpointsApiExplorer();
+        services.AddSwaggerGen();
+        services.AddOptions<AuthenticationConfig>()
             .Bind(configuration.GetSection(AuthenticationConfig.Authentication));
 
         var authConfig = new AuthenticationConfig();
